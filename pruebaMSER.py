@@ -16,16 +16,21 @@ def cogerImagen(name_img):
         sys.exit(-1)
 
 def hazmeCuadrado(rectangulo):
-    x = int(round(rectangulo[0] * 0.99))
-    y = int(round(rectangulo[1] * 0.98))
+    
+    x = rectangulo[0]
+    y = rectangulo[1]
     w = rectangulo[2]
     h = rectangulo[3]
+    centroX = round(x + w/2)
+    centroY = round(y + h/2)
     if w > h:
-        w = int(round(w * 1.25)) 
+        w = int(round(w * 1.4)) 
         h = w
     else:
-        h = int(round(h * 1.25))
+        h = int(round(h * 1.4))
         w = h
+    x = int(round(centroX - w/2))
+    y = int(round(centroY - h/2))
     return np.array([x,y,w,h])
 
 
@@ -65,13 +70,51 @@ if __name__ == '__main__':
             regions, x  = mser.detectRegions(gray)
             vis = img.copy()
             for region,rectangle in zip(regions,x):
-                breakpoint();
                 # Por cada region encontrada, pintamos su rectangulo
                 if (rectangle[2]/rectangle[3] >= MIN_DIVISION) and (rectangle[2]/rectangle[3] <= MAX_DIVISION):
                     x,y,w,h = hazmeCuadrado(rectangle)
-                    cv.rectangle(vis,(x,y),(x + w, y + h),(0,255,0))
+                   # cv.rectangle(vis,(x,y),(x + w, y + h),(0,255,0))
+                    imgnew = imgcontraste[y:y+h,x:x+w]
+                    while True:
+                        #cv.imshow('img',imgnew)
+                        img_hsv=cv.cvtColor(imgnew, cv.COLOR_BGR2HSV)
+                         #Cogemos el cuadrado (imagen recortada)
+                        new_img = img[y:y+h, x:x+w]
+                        hsv = cv.cvtColor(new_img, cv.COLOR_BGR2HSV)
 
-            cv.imshow('img', vis)
-            if cv.waitKey(5) == 27:
-                break
+                        # Cogemos los 2 rangos posibles de rojos
+                        rojo_bajos1 = np.array([0, 65, 75])
+                        rojo_altos1 = np.array([12, 255, 255])
+                        rojo_bajos2 = np.array([240, 65, 75])
+                        rojo_altos2 = np.array([256, 255, 255])
+                        # Buscamos los colores dentro dentro de los limites establecidos y aplicamos la mascara
+                        mascara_rojo1 = cv.inRange(hsv, rojo_bajos1,rojo_altos1)  # Establezco valores de H y S que detecten el rojo
+                        mascara_rojo2 = cv.inRange(hsv, rojo_bajos2, rojo_altos2)
+                        # Unimos las dos mascaras rojo
+                        mask3 = cv.add(mascara_rojo1, mascara_rojo2)
+
+                        #Aplicamos la mascara a la imagen
+
+                        res = cv.bitwise_and(new_img, new_img, mask=mask3)
+                        circles = cv.HoughCircles(cv.cvtColor(new_img,
+                                                              cv.COLOR_BGR2GRAY)
+                                                  ,cv.HOUGH_GRADIENT,1,200,param1=50,param2=30,minRadius=0,maxRadius=0)
+                        if circles is not None:
+                            # convert the (x, y) coordinates and radius of the circles to integers
+                            circles = np.round(circles[0, :]).astype("int")
+
+                            # loop over the (x, y) coordinates and radius of the circles
+                            for (x, y, r) in circles:
+                            # draw the circle in the output image, then draw a rectangle
+                            # corresponding to the center of the circle
+                                cv.circle(res, (x, y), r, (0, 255, 0), 2)
+                        resFinal = cv.resize(res, (300,300))
+                        imgOriginal = cv.resize(new_img, (300,300))
+                        cv.imshow('Imagen original', imgOriginal)
+                        cv.imshow('Imagen con mascara',resFinal)
+                        if cv.waitKey(5) == 27:
+                            break
+        #    cv.imshow('img', vis)
+        #    if cv.waitKey(5) == 27:
+        #        break
 cv.destroyAllWindows()
