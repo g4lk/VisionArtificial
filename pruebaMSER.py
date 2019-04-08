@@ -49,7 +49,12 @@ def corr2(a,b):
     a = a - mean2(a)
     b = b - mean2(b)
 
-    r = (a*b).sum() / math.sqrt((a*a).sum() * (b*b).sum());
+   raiz = math.sqrt((a*a).sum() * (b*b).sum())
+    #r = (a*b).sum() / raiz
+    if raiz > 0:
+        r = (a*b).sum() / raiz
+    else:
+        r = (a * b).sum()
     return r
 
 # Mejor contraste en imagen: sacado de https://stackoverflow.com/questions/39308030/how-do-i-increase-the-contrast-of-an-image-in-python-opencv
