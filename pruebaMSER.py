@@ -51,11 +51,21 @@ def corr2(a,b):
     # Calculamos el coeficiente de correlacion entre dos matrices
     a = a - mean2(a)
     b = b - mean2(b)
+<<<<<<< HEAD
     raiz = math.sqrt((a*a).sum() * (b*b).sum())
     if raiz != 0:
         r = (a*b).sum() / raiz
     else:
         r=0
+=======
+
+   raiz = math.sqrt((a*a).sum() * (b*b).sum())
+    #r = (a*b).sum() / raiz
+    if raiz > 0:
+        r = (a*b).sum() / raiz
+    else:
+        r = (a * b).sum()
+>>>>>>> 3b205f088e3f15938d7a618735b8b45a4c830c18
     return r
 
 # Mejor contraste en imagen: sacado de https://stackoverflow.com/questions/39308030/how-do-i-increase-the-contrast-of-an-image-in-python-opencv
