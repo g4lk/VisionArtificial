@@ -1,8 +1,7 @@
 import numpy as np
 import cv2 as cv
-import sys,os,math
-from ventana import Ventana
-
+import sys,os,math,argparse
+from ventana import Ventana 
 #ZONA DEFINICIÓN DE CONSTANTES
 MAX_DIVISION = 1.15
 MASCARA_TRIANGULARES = np.array([[[ 4, 4, 6],[ 4, 5, 7],[ 5, 6, 7],[ 7, 7, 9],[ 6, 6, 8],[ 6, 7, 8],[ 5, 6, 7],[ 4, 4, 5],[ 5, 5, 6],[ 8, 8,10],[ 9,10,12],[10,11,14],[10,11,14],[ 9, 9,12],[ 7, 7,10],[ 6, 6, 8],[ 8, 8,11],[ 7, 7, 9],[ 7, 7, 8],[ 8, 9,10],[ 8, 8,10],[ 7, 8, 9],[ 9, 9,11],[ 7, 7, 9],[ 6, 6, 8]], [[ 4, 5, 6],[ 6, 7, 8],[ 7, 7, 9],[ 6, 7, 8],[ 6, 6, 7],[ 5, 5, 7],[ 4, 5, 5],[ 4, 5, 6],[ 5, 5, 7],[ 7, 7, 9],[11,11,13],[16,17,21],[20,21,26],[19,20,25],[12,12,16],[ 7, 7, 9],[ 8, 9,11],[ 7, 8,10],[ 5, 6, 7],[ 7, 7, 9],[ 7, 7, 9],[ 8, 8,10],[ 8, 8,10],[ 6, 7, 8],[ 6, 7, 8]], [[ 4, 5, 5],[ 7, 7, 9],[ 7, 7, 9],[ 6, 6, 8],[ 6, 7, 7],[ 7, 7, 9],[ 5, 5, 6],[ 4, 4, 5],[ 5, 6, 7],[10,11,13],[18,19,27],[29,31,45],[36,37,52],[34,36,48],[21,22,28],[10,10,12],[ 5, 5, 7],[ 5, 5, 7],[ 5, 6, 7],[11,12,14],[ 7, 8,10],[10,10,13],[ 7, 7,10],[ 6, 7, 8],[ 6, 7, 9]], [[ 3, 3, 4],[ 5, 5, 7],[ 4, 4, 5],[ 5, 5, 6],[ 6, 6, 7],[ 7, 7, 8],[ 4, 4, 5],[ 6, 6, 8],[ 6, 6, 8],[12,13,17],[23,25,38],[37,39,65],[42,45,76],[41,43,67],[35,37,49],[17,18,23],[ 6, 7, 9],[ 7, 7, 9],[10,10,12],[11,11,14],[ 7, 8,10],[ 7, 7, 9],[ 7, 8,11],[ 6, 6, 7],[ 8, 8,10]], [[ 2, 3, 3],[ 3, 3, 4],[ 4, 4, 5],[ 4, 4, 4],[ 6, 6, 7],[ 5, 5, 6],[ 5, 6, 7],[ 5, 6, 7],[ 4, 5, 6],[16,17,24],[32,33,53],[39,42,78],[43,47,91],[46,48,86],[44,45,66],[26,28,36],[11,12,15],[ 9, 9,12],[ 9, 9,12],[ 8, 8,10],[ 6, 6, 8],[ 9, 9,11],[ 7, 7, 9],[ 7, 7, 8],[ 4, 5, 6]], [[ 3, 4, 5],[ 4, 4, 6],[ 6, 6, 8],[ 4, 5, 6],[ 5, 5, 6],[ 6, 7, 8],[ 5, 5, 6],[ 5, 5, 7],[10,10,12],[21,22,34],[39,41,69],[44,47,86],[41,46,93],[43,46,92],[44,47,77],[37,38,53],[19,20,26],[10,10,13],[ 9, 9,11],[ 7, 7, 9],[ 7, 7, 9],[ 7, 7, 9],[ 6, 7, 8],[ 3, 3, 4],[ 4, 5, 6]], [[ 5, 5, 7],[ 5, 5, 6],[ 7, 7,10],[ 6, 6, 8],[ 5, 5, 6],[ 6, 6, 7],[ 5, 5, 7],[ 3, 3, 4],[14,15,20],[31,33,52],[41,44,77],[43,47,83],[51,55,93],[45,50,93],[46,49,88],[49,52,77],[30,32,43],[12,13,17],[ 7, 7, 9],[ 6, 6, 8],[ 4, 4, 5],[ 7, 7, 9],[ 6, 6, 8],[ 4, 4, 5],[ 5, 5, 6]], [[ 4, 4, 6],[ 4, 5, 5],[ 7, 8,10],[ 5, 5, 6],[ 5, 5, 6],[ 6, 6, 7],[ 4, 4, 5],[ 6, 7, 8],[22,23,34],[37,39,66],[40,43,78],[37,39,65],[40,41,59],[51,54,85],[44,48,89],[48,50,83],[40,41,58],[19,20,26],[ 6, 6, 7],[ 6, 6, 7],[ 8, 8,10],[ 5, 6, 7],[ 7, 7, 8],[ 6, 6, 7],[ 8, 8, 9]], [[ 4, 4, 5],[ 5, 5, 6],[ 4, 4, 5],[ 4, 5, 6],[ 4, 4, 6],[ 5, 5, 6],[ 8, 8,10],[12,14,18],[29,31,49],[41,44,77],[40,43,77],[31,32,49],[21,22,28],[41,43,57],[45,49,83],[42,45,85],[43,45,69],[31,32,43],[11,11,14],[ 7, 8,10],[ 8, 8,10],[ 7, 8, 9],[ 6, 6, 7],[ 6, 6, 7],[ 7, 7, 8]], [[ 5, 6, 7],[ 7, 7, 9],[ 6, 6, 7],[ 5, 5, 6],[ 4, 4, 5],[ 6, 6, 8],[ 8, 8,10],[22,23,32],[41,43,71],[41,44,81],[37,40,68],[25,26,35],[15,15,18],[20,21,25],[45,48,70],[42,46,87],[45,48,83],[41,43,60],[22,23,30],[12,12,15],[ 8, 9,11],[ 9, 9,12],[ 8, 8,10],[ 7, 7, 9],[ 6, 6, 8]], [[ 5, 6, 7],[ 7, 7, 9],[ 4, 4, 5],[ 3, 3, 4],[ 4, 5, 6],[ 5, 5, 7],[14,14,18],[31,34,51],[41,44,78],[38,40,75],[33,35,53],[17,18,23],[12,12,15],[11,12,14],[29,30,38],[46,51,84],[39,43,85],[45,47,74],[34,35,46],[13,13,16],[11,12,15],[ 8, 9,11],[ 7, 7, 9],[ 6, 6, 7],[ 7, 7, 9]], [[ 5, 5, 6],[ 5, 5, 6],[ 5, 5, 6],[ 3, 3, 4],[ 5, 6, 7],[ 6, 6, 7],[17,18,23],[39,42,68],[39,42,81],[38,40,69],[23,24,32],[15,16,20],[10,10,14],[ 8, 9,12],[11,12,15],[44,47,65],[39,44,84],[43,46,86],[47,49,70],[20,21,28],[13,14,17],[ 8, 9,11],[ 7, 8,10],[ 5, 5, 7],[ 6, 7, 9]], [[ 5, 5, 7],[ 5, 5, 6],[ 6, 6, 7],[ 5, 6, 7],[ 5, 5, 7],[10,10,12],[34,37,52],[42,45,81],[37,40,75],[34,35,53],[19,20,25],[14,15,18],[ 8, 9,11],[ 6, 7, 9],[ 7, 7, 9],[26,27,33],[45,49,77],[37,42,85],[46,48,79],[41,43,56],[15,16,20],[ 9, 9,12],[ 9,10,12],[ 7, 7, 9],[ 6, 6, 8]], [[ 6, 7, 8],[ 5, 6, 7],[ 6, 6, 7],[ 4, 5, 6],[ 6, 6, 8],[19,20,26],[39,41,66],[37,41,80],[40,42,71],[29,30,40],[15,15,18],[ 8, 8,10],[ 5, 5, 6],[ 4, 5, 6],[ 5, 6, 7],[12,12,14],[39,40,52],[41,45,83],[40,43,85],[48,50,71],[26,28,36],[10,11,13],[ 8, 9,11],[ 5, 5, 6],[ 6, 6, 8]], [[ 6, 7, 8],[ 6, 6, 8],[ 6, 6, 8],[ 5, 5, 6],[ 8, 9,11],[34,35,49],[40,43,79],[40,42,80],[36,37,54],[21,21,26],[13,13,16],[ 6, 6, 7],[ 5, 5, 6],[ 5, 5, 7],[ 5, 5, 6],[ 9, 9,11],[20,20,24],[46,49,73],[38,42,87],[52,55,91],[40,41,56],[18,19,24],[ 7, 8,10],[ 6, 7, 9],[ 6, 6, 8]], [[ 6, 7, 9],[ 4, 4, 5],[ 4, 4, 6],[ 2, 2, 3],[16,17,22],[40,43,68],[39,43,85],[37,39,67],[27,28,37],[17,18,21],[ 9,10,11],[ 5, 5, 6],[ 4, 4, 5],[ 5, 5, 6],[ 4, 4, 5],[ 4, 5, 5],[ 8, 9,10],[37,38,47],[44,48,84],[39,43,88],[48,49,73],[26,27,35],[11,11,15],[ 7, 8,10],[ 6, 7, 8]], [[ 7, 8,10],[ 6, 6, 8],[ 5, 5, 7],[10,11,13],[32,34,46],[42,46,82],[43,46,87],[39,40,58],[19,19,24],[13,14,16],[12,12,14],[ 7, 8, 9],[ 6, 6, 7],[ 5, 5, 6],[ 4, 4, 5],[ 5, 5, 6],[ 5, 5, 6],[15,15,18],[49,51,72],[39,44,88],[45,48,85],[44,46,62],[15,16,21],[10,10,13],[ 5, 5, 7]], [[ 6, 6, 8],[ 4, 4, 6],[ 6, 6, 7],[18,19,23],[42,45,69],[40,44,86],[43,46,77],[27,28,37],[13,14,17],[11,11,13],[14,14,16],[ 7, 7, 8],[ 3, 3, 4],[ 5, 5, 6],[ 6, 6, 7],[ 7, 7, 8],[ 3, 4, 4],[ 6, 7, 8],[29,30,37],[46,49,81],[39,43,87],[48,49,75],[27,28,36],[12,13,16],[ 5, 5, 7]], [[ 5, 5, 7],[ 5, 5, 7],[10,10,12],[31,32,42],[44,48,85],[43,46,87],[36,37,55],[22,22,27],[10,11,13],[ 8, 8,10],[ 7, 7, 8],[ 8, 8, 9],[ 4, 4, 5],[ 4, 4, 4],[ 6, 6, 7],[ 3, 3, 4],[ 1, 1, 1],[ 4, 4, 4],[13,13,15],[47,49,66],[40,44,84],[41,44,82],[45,46,63],[19,20,25],[ 9,10,12]], [[ 2, 3, 3],[ 5, 5, 7],[17,17,21],[39,41,63],[42,46,88],[43,46,77],[25,26,36],[15,16,19],[ 6, 6, 7],[ 6, 6, 7],[ 5, 5, 6],[ 8, 8,10],[ 4, 4, 5],[ 7, 7, 9],[ 5, 5, 6],[ 5, 5, 6],[ 4, 4, 5],[ 4, 4, 5],[ 9, 9,11],[33,34,40],[49,52,81],[39,42,86],[47,48,76],[34,35,46],[13,14,17]], [[ 4, 5, 6],[ 7, 7, 8],[31,33,42],[44,48,84],[44,48,91],[41,42,64],[20,20,27],[11,12,14],[ 7, 8, 9],[ 9, 9,11],[ 8, 8,10],[ 9, 9,10],[ 9,10,11],[ 9, 9,11],[12,13,15],[12,13,15],[13,13,16],[13,14,18],[15,16,22],[24,25,33],[51,53,75],[39,43,86],[43,46,87],[42,44,64],[20,20,26]], [[ 4, 5, 6],[14,14,18],[40,43,65],[42,46,91],[44,46,88],[43,43,66],[33,33,47],[35,35,47],[32,32,44],[35,36,48],[34,35,48],[32,33,47],[35,36,52],[34,36,52],[38,39,58],[36,37,57],[34,35,56],[34,35,57],[35,36,59],[39,40,64],[47,49,79],[38,41,85],[36,39,85],[48,50,78],[31,33,43]], [[ 7, 7, 9],[22,23,29],[39,42,73],[37,42,89],[39,42,93],[42,44,91],[40,42,85],[40,42,85],[37,39,82],[35,37,80],[34,35,79],[35,37,80],[33,35,77],[33,34,77],[35,37,80],[35,36,79],[35,37,79],[37,38,79],[37,39,79],[38,40,80],[40,42,84],[35,37,81],[34,37,81],[42,45,77],[35,36,47]], [[10,10,13],[29,30,42],[36,40,70],[35,39,80],[36,40,85],[37,40,85],[38,40,84],[36,38,81],[36,38,79],[36,37,77],[34,35,74],[36,37,75],[34,35,71],[36,37,72],[35,36,70],[36,37,69],[36,37,69],[36,38,69],[39,41,73],[37,38,69],[38,39,70],[36,37,66],[37,39,68],[34,36,59],[30,32,42]], [[ 7, 7, 8],[19,20,25],[28,30,42],[35,37,53],[36,37,54],[37,38,55],[35,37,53],[37,38,54],[33,34,49],[33,33,48],[33,35,50],[34,35,50],[32,33,49],[33,34,50],[29,30,43],[28,29,41],[29,30,43],[26,28,39],[28,29,41],[28,29,41],[29,30,42],[30,31,43],[28,30,42],[27,28,38],[19,19,24]]],dtype=np.uint8)
@@ -51,21 +50,11 @@ def corr2(a,b):
     # Calculamos el coeficiente de correlacion entre dos matrices
     a = a - mean2(a)
     b = b - mean2(b)
-<<<<<<< HEAD
     raiz = math.sqrt((a*a).sum() * (b*b).sum())
     if raiz != 0:
         r = (a*b).sum() / raiz
     else:
         r=0
-=======
-
-   raiz = math.sqrt((a*a).sum() * (b*b).sum())
-    #r = (a*b).sum() / raiz
-    if raiz > 0:
-        r = (a*b).sum() / raiz
-    else:
-        r = (a * b).sum()
->>>>>>> 3b205f088e3f15938d7a618735b8b45a4c830c18
     return r
 
 # Mejor contraste en imagen: sacado de https://stackoverflow.com/questions/39308030/how-do-i-increase-the-contrast-of-an-image-in-python-opencv
@@ -91,7 +80,7 @@ def mejorContraste(img):
 def generarMascaraRojos(img):
         inversa = ~img
         hsv_inversa = cv.cvtColor(inversa, cv.COLOR_BGR2HSV)
-        mask = cv.inRange(hsv_inversa, np.array([90 - 12, 10, 70]), np.array([90 + 12, 255, 255]))
+        mask = cv.inRange(hsv_inversa, np.array([90 - 10, 10, 70]), np.array([90 + 10, 255, 255]))
         return mask
 
 def comprobarMascara(mascara, mascara_cte):
@@ -117,43 +106,65 @@ def escribir_en_ficheros(f1,f2,resultado):
         f1.write(ventana.str())
         f2.write(ventana.str_tipo())
 
+def recoger_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_path', help='Ruta a imagenes de entrenamiento')
+    parser.add_argument('--test_path', help='Ruta a imagenes de test')
+    parser.add_argument('--detector', help='Clase del detector')
+    args = parser.parse_args()
+    return args
+
+def hacerScore(imagen,mascara):
+    imgFinal = imagen * mascara
+    img = np.divide(imgFinal,255)
+    score = np.sum(img)/ img.size * 100
+    return int(round(score)) 
+
 if __name__ == '__main__':
 
     r = open("resultado.txt", "w+")
     rt = open("resultado_por_tipo.txt", "w+")
-    path = sys.argv[1]    #'./train_10_ejemplos/'
+    args = recoger_args()    #'./train_10_ejemplos/'
     resultados = []
-    for imagen in os.listdir(path):
-        img = cogerImagen(path + imagen)
-        if img is not None:
-            imgcontraste = mejorContraste(img)
-            mser = cv.MSER_create(_delta = 7, _max_area =20000,_max_variation = .14)
-            gray = cv.cvtColor(imgcontraste, cv.COLOR_BGR2GRAY)
-            _ , x  = mser.detectRegions(gray)
-            for rectangle in x:
-                # Por cada rectangulo, miramos el alto y el ancho y a partir de ahi, filtramos
-                if (rectangle[2]/rectangle[3] >= MIN_DIVISION) and (rectangle[2]/rectangle[3] <= MAX_DIVISION):
-                    x,y,w,h = hazmeCuadrado(rectangle)
+    for path in  [args.train_path,args.test_path]:
+        for imagen in os.listdir(path):
+            img = cogerImagen(path + imagen)
+            if img is not None:
+                imgcontraste = mejorContraste(img)
+                mser = cv.MSER_create(_delta = 7, _max_area =20000,_max_variation = .14)
+                gray = cv.cvtColor(imgcontraste, cv.COLOR_BGR2GRAY)
+                _ , x  = mser.detectRegions(gray)
+                for rectangle in x:
+                    # Por cada rectangulo, miramos el alto y el ancho y a partir de ahi, filtramos
+                    if (rectangle[2]/rectangle[3] >= MIN_DIVISION) and (rectangle[2]/rectangle[3] <= MAX_DIVISION):
+                        x,y,w,h = hazmeCuadrado(rectangle)
 
-                    rectanguloColor = imgcontraste[y:y + h, x:x + w]
-                    if rectanguloColor.size != 0:
-                        mask = generarMascaraRojos(rectanguloColor)
-                        #Aplicamos la mascara a la imagen
-                        res = cv.resize(cv.bitwise_and(rectanguloColor, rectanguloColor, mask=mask),(25,25))
-                        porcentaje_warning = comprobarMascara(res,MASCARA_TRIANGULARES)
-                        porcentaje_obligacion = comprobarMascara(res, MASCARA_CIRCULARES)
-                        porcentaje_stop = comprobarMascara(res, MASCARA_STOP)
-                        maximo = max(porcentaje_warning,porcentaje_obligacion,porcentaje_stop)
-                        #Comparamos las ventanas que tenemos para no tener repetidas y coger la que tenga mejor score
-                        if maximo == porcentaje_warning and maximo > UMBRAL_APARIENCIA:
-                            ventana = Ventana(imagen, x, y, w, h, 2, int(round(porcentaje_warning*100)))
-                            resultados = comparar_ventanas(resultados,ventana)
-                        elif maximo == porcentaje_obligacion and maximo > UMBRAL_APARIENCIA:
-                            ventana = Ventana(imagen, x, y, w, h, 1, int(round(porcentaje_obligacion * 100)))
-                            resultados = comparar_ventanas(resultados, ventana)
-                        elif maximo == porcentaje_stop and maximo > UMBRAL_APARIENCIA:
-                            ventana = Ventana(imagen, x, y, w, h, 3, int(round(porcentaje_stop * 100)))
-                            resultados = comparar_ventanas(resultados, ventana)
+                        rectanguloColor = imgcontraste[y:y + h, x:x + w]
+                        if rectanguloColor.size != 0:
+                            mask = generarMascaraRojos(rectanguloColor)
+                            #Aplicamos la mascara a la imagen
+                            res = cv.resize(cv.bitwise_and(rectanguloColor, rectanguloColor, mask=mask),(25,25))
+                            porcentaje_warning = comprobarMascara(res,MASCARA_TRIANGULARES)
+                            porcentaje_obligacion = comprobarMascara(res,MASCARA_CIRCULARES)
+                            porcentaje_stop = comprobarMascara(res,MASCARA_STOP)
+                            maximo = max(porcentaje_warning,porcentaje_obligacion,porcentaje_stop)
+                            #Comparamos las ventanas que tenemos para no tener repetidas y coger la que tenga mejor score
+                            if maximo == porcentaje_warning and maximo > UMBRAL_APARIENCIA:
+                                ventana = Ventana(imagen, x, y, w, h, 2,\
+                                                  hacerScore(res,MASCARA_TRIANGULARES))
+                                resultados = comparar_ventanas(resultados,ventana)
+                            elif maximo == porcentaje_obligacion and maximo > UMBRAL_APARIENCIA:
+                                ventana = Ventana(imagen, x, y, w, h, 1,\
+                                                  hacerScore(res,MASCARA_CIRCULARES))
+                                resultados = comparar_ventanas(resultados, ventana)
+                            elif maximo == porcentaje_stop and maximo > UMBRAL_APARIENCIA:
+                                ventana = Ventana(imagen, x, y, w, h, 3,\
+                                                  hacerScore(res,MASCARA_STOP))
+                                resultados = comparar_ventanas(resultados, ventana)
+    try: import operator
+    except ImportError: keyfun= lambda x: x.img 
+    else: keyfun= operator.attrgetter("img") 
+    resultados.sort(key=keyfun)
     escribir_en_ficheros(r,rt,resultados)
 
 

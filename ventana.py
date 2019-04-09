@@ -10,7 +10,7 @@ class Ventana:
         self.score = score
 
     def str(self):
-        return f'{self.img};{self.x};{self.y};{self.w};{self.h};1;{str(self.score)}\n'
+        return f'{self.img};{self.x};{self.y};{self.w+self.x};{self.h+self.y};1;{str(self.score)}\n'
 
     def str_tipo(self):
-        return f'{self.img};{self.x};{self.y};{self.w};{self.h};{self.type};{str(self.score)}\n'
+        return f'{self.img};{self.x};{self.y};{self.w+self.x};{self.h+self.y}{self.type};{str(self.score)}\n'
