@@ -112,7 +112,11 @@ def recoger_args():
     parser.add_argument('--test_path', help='Ruta a imagenes de test')
     parser.add_argument('--detector', help='Clase del detector')
     args = parser.parse_args()
-    return args
+    if args.test_path and args.train_path:
+        return args
+    else:
+        print('Necesitamos ruta de imagenes de entrenamiento y imagenes de test')
+        sys.exit(-1)
 
 def hacerScore(imagen,mascara):
     imgFinal = imagen * mascara
@@ -128,7 +132,7 @@ if __name__ == '__main__':
     resultados = []
     for path in  [args.train_path,args.test_path]:
         for imagen in os.listdir(path):
-            img = cogerImagen(path + imagen)
+            img = cogerImagen(f'{path}/{imagen}')
             if img is not None:
                 imgcontraste = mejorContraste(img)
                 mser = cv.MSER_create(_delta = 7, _max_area =20000,_max_variation = .14)
